@@ -26,5 +26,9 @@
     "styled-components": "^6.1.8",
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all"
   }
 }

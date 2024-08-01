@@ -1,8 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as Dialog from '@radix-ui/react-dialog';
 import { ArrowCircleDown, ArrowCircleUp, X } from 'phosphor-react';
+import { useContext } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { TransactionsContext } from '../../contexts/Transaction';
 import {
   Close,
   Content,
@@ -15,7 +17,7 @@ const transactionSchema = z.object({
   description: z.string().min(3),
   price: z.number(),
   category: z.string().min(3),
-  type: z.enum(['income', 'outcome']).nullable(),
+  type: z.enum(['income', 'outcome']),
 });
 
 type TransactionSchema = z.infer<typeof transactionSchema>;
@@ -25,15 +27,27 @@ export function NewTransactionModal() {
     register,
     handleSubmit,
     formState: { isSubmitting },
+    reset,
     control,
   } = useForm<TransactionSchema>({
     resolver: zodResolver(transactionSchema),
+    defaultValues: {
+      type: 'income',
+    },
   });
 
-  const handleFormSubmit = async (data: TransactionSchema) => {
-    console.log(data);
+  const { createTransaction } = useContext(TransactionsContext);
 
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+  const handleFormSubmit = async (data: TransactionSchema) => {
+    await createTransaction({
+      category: data.category,
+      description: data.description,
+      price: data.price,
+      type: data.type,
+      createdAt: new Date().toISOString(),
+    });
+
+    reset();
   };
 
   return (
@@ -65,9 +79,9 @@ export function NewTransactionModal() {
           <Controller
             control={control}
             name="type"
-            render={({ field: { onChange } }) => {
+            render={({ field: { onChange, value } }) => {
               return (
-                <TransactionType onValueChange={onChange}>
+                <TransactionType onValueChange={onChange} value={value}>
                   <TransactionTypeButton value="income" variant="income">
                     <ArrowCircleUp size={24} />
                     Entrada
